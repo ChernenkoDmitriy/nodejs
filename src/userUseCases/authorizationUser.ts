@@ -1,5 +1,6 @@
-import { IUserDataBasePresenter } from '../DAL/userDataBasePresenter';
-const { check, validationResult } = require('express-validator')
+import { IUserManager } from '../user';
+import { validateRequest } from '../utils';
+const { check } = require('express-validator')
 
 export interface IAuthorizationUser {
     routeName: string;
@@ -14,20 +15,20 @@ export class AuthorizationUser implements IAuthorizationUser {
         check('hashPassword', 'Minimal password length 6').isLength({ min: 1 }),
     ];
 
-    constructor(private dataBase: IUserDataBasePresenter) {
+    constructor(private userManager: IUserManager) {
 
     };
 
     authorization = async (req: any, res: any) => {
         try {
-            const { error, message, isError } = this.validateRequest(req);
+            const { error, message, isError } = validateRequest(req);
             if (isError) {
                 return res.status(400).json({ error, message });
             }
             const { email, hashPassword } = req.body;
-            const user = await this.dataBase.userAuthorization(email,hashPassword);
+            const user = await this.userManager.authorizate(email, hashPassword);
             if (user) {
-                res.status(200).send({ status: 'ok', message: 'success', user });
+                res.status(200).send({ status: 'ok', message: '', data: user });
             } else {
                 res.status(400).send({ status: 'error', message: 'user is not found' });
             }
@@ -35,17 +36,6 @@ export class AuthorizationUser implements IAuthorizationUser {
             console.warn('Authentication -> registration: ', error);
             res.status(400).send({ status: 'error', message: 'user is not found', error });
         }
-    };
-
-    private validateRequest = (req): { error: Array<string>; message: string; isError: boolean; } => {
-        const result = { error: [], message: '', isError: false };
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            result.error = errors.array();
-            result.message = 'Wrong request data';
-            result.isError = true;
-        }
-        return result;
     };
 
 };

@@ -1,6 +1,6 @@
-import { IUserDataBasePresenter } from '../DAL/userDataBasePresenter';
-import { v4 as uuidv4 } from 'uuid';
-const { check, validationResult } = require('express-validator')
+import { IUserManager } from '../user';
+import { validateRequest } from '../utils';
+const { check } = require('express-validator')
 
 export interface IFindUser {
     routeName: string;
@@ -13,22 +13,23 @@ export class FindUser implements IFindUser {
     readonly validator = [
         check('findBy', 'Find by name, email or phone').isLength({ min: 4, max: 5 }),
         check('value', 'Wrong value').isLength({ min: 1 }),
+        check('token', 'Wrong value').isUUID(),
     ];
 
-    constructor(private dataBase: IUserDataBasePresenter) {
+    constructor(private userManager: IUserManager) {
 
     };
 
     findUsers = async (req: any, res: any) => {
         try {
-            const { error, message, isError } = this.validateRequest(req);
+            const { error, message, isError } = validateRequest(req);
             if (isError) {
                 return res.status(400).json({ error, message });
             }
-            const { findBy, value } = req.body;
-            const data = await this.dataBase.findUsers(findBy, value);
-            if (Array.isArray(data)) {
-                res.status(200).send({ status: 'ok', message: 'success', data });
+            const { findBy, value, token } = req.body;
+            const users = await this.userManager.findUsers(findBy, value, token);
+            if (Array.isArray(users)) {
+                res.status(200).send({ status: 'ok', message: 'success', data: users });
             } else {
                 res.status(400).send({ status: 'error', message: 'users is not found' });
             }
@@ -36,17 +37,6 @@ export class FindUser implements IFindUser {
             console.warn('Authentication -> registration: ', error);
             res.status(400).send({ status: 'error', message: 'users is not found', error });
         }
-    };
-
-    private validateRequest = (req): { error: Array<string>; message: string; isError: boolean; } => {
-        const result = { error: [], message: '', isError: false };
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            result.error = errors.array();
-            result.message = 'Wrong request data';
-            result.isError = true;
-        }
-        return result;
     };
 
 };

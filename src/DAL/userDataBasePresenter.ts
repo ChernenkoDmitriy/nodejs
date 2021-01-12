@@ -1,10 +1,14 @@
-import { IUser } from "../userUseCases/entites";
+import { IUser } from "../user/entites";
 import { IDataBase } from "./dataBaseFile";
 
+const USERS_PATH = './src/DAL/data/users.json';
+
 export interface IUserDataBasePresenter {
-    userRegistration: (user: IUser) => Promise<boolean>;
-    userAuthorization: (email: string, hashPassword: string) => Promise<IUser | undefined>;
-    findUsers: (findBy: 'email' | 'phone' | 'name', value: string) => Promise<IUser[]>;
+    addUser: (user: IUser) => Promise<IUser | null>;
+    findUserByEmailAndPassword: (email: string, hashPassword: string) => Promise<IUser | undefined>;
+    findtUserByUid: (uid: string, token: string) => Promise<IUser | undefined>;
+    findUsers: (findBy: 'email' | 'phone' | 'name', value: string, token: string) => Promise<IUser[]>;
+    updateUser: (user: IUser) => Promise<IUser | null>;
 };
 
 export class UserDataBasePresenter implements IUserDataBasePresenter {
@@ -12,18 +16,49 @@ export class UserDataBasePresenter implements IUserDataBasePresenter {
 
     };
 
-    getUserById = async (userUid) => {
-
+    addUser = async (user: IUser): Promise<IUser | null> => {
+        try {
+            const users: IUser[] = await this.dataBase.readFile(USERS_PATH);
+            if (users.find(item => item.email === user.email)) {
+                return null;
+            } else {
+                users.push(user);
+                await this.dataBase.writeToFile(USERS_PATH, users)
+                return user;
+            }
+        } catch (error) {
+            console.warn('UserDataBasePresenter -> addUser: ', error);
+            return null;
+        }
     };
 
-    findUsers = async (findBy: 'email' | 'phone' | 'name', value: string) => {
+    findUserByEmailAndPassword = async (email: string, hashPassword: string): Promise<IUser | undefined> => {
+        try {
+            const users: IUser[] = await this.dataBase.readFile(USERS_PATH);
+            const user = users.find(item => (item.email === email && item.hashPassword === hashPassword));
+            return user;
+        } catch (error) {
+            console.warn('DataBasePresenter -> userAuthorization: ', error);
+        }
+    };
+
+    findtUserByUid = async (uid: string, token: string): Promise<IUser | undefined> => {
+        try {
+            const users: IUser[] = await this.dataBase.readFile(USERS_PATH);
+            const user = users.find(item => (item.uid === uid && item.token === token));
+            return user;
+        } catch (error) {
+            console.warn('DataBasePresenter -> findtUserByUid: ', error);
+        }
+    };
+
+    findUsers = async (findBy: 'email' | 'phone' | 'name', value: string, token: string) => {
         try {
             let result = [];
             const lowerCaseValue = value.toLowerCase();
             if (findBy === 'email' || findBy === 'phone' || findBy === 'name') {
-                const users = await this.dataBase.getUsers();
-                console.log('users ', users)
-                result = await users.filter(user => user[findBy].toLowerCase().match(lowerCaseValue));
+                const users: IUser[] = await this.dataBase.readFile(USERS_PATH);
+                result = users.filter(user => user[findBy].toLowerCase().match(lowerCaseValue) && user.token !== token);
             }
             return result;
         } catch (error) {
@@ -32,24 +67,16 @@ export class UserDataBasePresenter implements IUserDataBasePresenter {
         }
     };
 
-    userRegistration = async (user: IUser): Promise<boolean> => {
+    updateUser = async (user: IUser): Promise<IUser | null> => {
         try {
-            const isAdded = await this.dataBase.userRegistration(user);
-            return isAdded;
-        } catch (error) {
-            console.warn('DataBasePresenter -> userRegistration: ', error);
-            return false;
-        }
-    };
-
-    userAuthorization = async (email: string, hashPassword: string): Promise<IUser | undefined> => {
-        try {
-            const users = await this.dataBase.getUsers();
-            const user = users.find(item => (item.email === email && item.hashPassword === hashPassword));
+            const users: IUser[] = await this.dataBase.readFile(USERS_PATH);
+            const filteredUsers = users.filter(item => item.uid !== user.uid);
+            filteredUsers.push(user);
+            await this.dataBase.writeToFile(USERS_PATH, filteredUsers)
             return user;
         } catch (error) {
-            console.warn('DataBasePresenter -> userAuthorization: ', error);
+            console.warn('DataBasePresenter -> updateUser: ', error);
+            return null;
         }
     };
-
 };
