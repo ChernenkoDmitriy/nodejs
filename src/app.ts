@@ -14,17 +14,18 @@ const {
     userAuthorizeRoute,
     findUserFactory,
     createRoomRoute,
+    getRoomsRoute,
+    getRoomRoute
 } = new AppContext();
 
 app.use(userRegisterRoute.routeName, userRegisterRoute.validator, userRegisterRoute.registration);
 app.use(userAuthorizeRoute.routeName, userAuthorizeRoute.validator, userAuthorizeRoute.authorization);
 app.use(findUserFactory.routeName, findUserFactory.validator, findUserFactory.findUsers);
 app.use(createRoomRoute.routeName, createRoomRoute.validator, createRoomRoute.createRoom);
+app.use(getRoomsRoute.routeName, getRoomsRoute.validator, getRoomsRoute.getRoomsByUserUid);
+app.use(getRoomRoute.routeName, getRoomRoute.validator, getRoomRoute.getRoomByUid);
 
 // app.use(edditUser.routeName, edditUser.validator, edditUser.eddit);
-
-// app.use(getRooms.routeName, getRooms.validator, getRooms.getRooms);
-// app.use(getRoom.routeName, getRoom.validator, getRoom.getRoom);
 
 // app.use(roomUseCases.addMemberToRoomRoute, roomUseCases.addMemberToRoomValidator, roomUseCases.addMemberToRoom);
 // app.use(roomUseCases.removeMemberFromRoomRoute, roomUseCases.removeMemberFromRoomValidator, roomUseCases.removeMemberFromRoom);

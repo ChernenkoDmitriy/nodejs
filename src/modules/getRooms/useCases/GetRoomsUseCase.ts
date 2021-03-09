@@ -1,24 +1,21 @@
-
-import { IUser } from "../../../models/IUser";
-import { IUserAuthorizeDataBase } from "../dataBase/UserAuthorizeDataBase";
+import { IRoomDataBase } from "../../../DAL/RoomDataBase/IRoomDataBase";
+import { IRoom } from "../../../models/IRoom";
 
 export interface IGetRoomsUseCase {
-    authorize: (name: string, hashPassword: string) => Promise<IUser | null>;
+    getRoomsByUserUid: (userUid: string) => Promise<IRoom[] | null>;
 }
 
 export class GetRoomsUseCase implements IGetRoomsUseCase {
-    constructor(private userAuthorizeDataBase: IUserAuthorizeDataBase) {
+    constructor(private roomDataBase: IRoomDataBase) {
     }
 
-    authorize = async (email: string, hashPassword: string) => {
+    getRoomsByUserUid = async (userUid: string) => {
         try {
-            const user = await this.userAuthorizeDataBase.findUserByEmailAndHashPassword(email, hashPassword);
-            if (user) {
-                delete user.hashPassword;
-            }
-            return user;
+            const rooms: IRoom[] = await this.roomDataBase.getRooms();
+            const userRooms = rooms.filter(room => room.members.some(member => member.uid === userUid));
+            return userRooms;
         } catch (error) {
-            console.warn('UserAuthorizeUseCase -> authorize: ', error);
+            console.warn('GetRoomsUseCase -> getRoomsByUserUid: ', error);
             return null;
         }
     }

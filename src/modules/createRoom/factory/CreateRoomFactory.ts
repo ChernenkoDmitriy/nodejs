@@ -11,7 +11,7 @@ export interface ICreateRoomFactory {
 
 export class CreateRoomFactory implements ICreateRoomFactory {
     private dataBase: IDataBase = new DataBaseFile();
-    private createRoomDataBase: IRoomDataBase = new RoomDataBase(this.dataBase);
-    private createRoomUseCase: ICreateRoomUseCase = new CreateRoomUseCase(this.createRoomDataBase);
+    private roomDataBase: IRoomDataBase = new RoomDataBase(this.dataBase);
+    private createRoomUseCase: ICreateRoomUseCase = new CreateRoomUseCase(this.roomDataBase);
     readonly createRoomRoute: ICreateRoomRoute = new CreateRoomRoute(this.createRoomUseCase);
 }
