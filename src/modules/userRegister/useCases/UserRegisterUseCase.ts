@@ -1,23 +1,23 @@
 import { IUser } from "../../../models/IUser";
-import { IUserRegisterDataBase } from "../dataBase/UserRegisterDataBase";
 import { v4 as uuidv4 } from 'uuid';
+import { IUserDataBase } from "../../../DAL/UserDataBase/IUserDataBase";
 
 export interface IUserRegisterUseCase {
     register: (name: string, phone: string, email: string, hashPassword: string) => Promise<IUser | null>;
 }
 
 export class UserRegisterUseCase implements IUserRegisterUseCase {
-    constructor(private userRegisterDataBase: IUserRegisterDataBase) {
+    constructor(private userDataBase: IUserDataBase) {
     }
 
     register = async (name: string, phone: string, email: string, hashPassword: string) => {
         try {
-            const userFromBD = await this.userRegisterDataBase.findUserByEmailOrPhone(email, phone);
+            const userFromBD = await this.userDataBase.findUserByEmailOrPhone(email, phone);
             if (userFromBD) {
                 return null;
             }
             const user = this.createUser(name, phone, email, hashPassword);
-            await this.userRegisterDataBase.saveUser(user);
+            await this.userDataBase.saveUser(user);
             delete user.hashPassword;
             return user;
         } catch (error) {

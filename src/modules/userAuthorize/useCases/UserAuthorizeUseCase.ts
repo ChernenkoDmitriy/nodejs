@@ -1,18 +1,18 @@
 
+import { IUserDataBase } from "../../../DAL/UserDataBase/IUserDataBase";
 import { IUser } from "../../../models/IUser";
-import { IUserAuthorizeDataBase } from "../dataBase/UserAuthorizeDataBase";
 
 export interface IUserAuthorizeUseCase {
     authorize: (name: string, hashPassword: string) => Promise<IUser | null>;
 }
 
 export class UserAuthorizeUseCase implements IUserAuthorizeUseCase {
-    constructor(private userAuthorizeDataBase: IUserAuthorizeDataBase) {
+    constructor(private userDataBase: IUserDataBase) {
     }
 
     authorize = async (email: string, hashPassword: string) => {
         try {
-            const user = await this.userAuthorizeDataBase.findUserByEmailAndHashPassword(email, hashPassword);
+            const user = await this.userDataBase.findUserByEmailAndHashPassword(email, hashPassword);
             if (user) {
                 delete user.hashPassword;
             }
