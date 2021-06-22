@@ -6,9 +6,10 @@ const MODULE_NAME_CLASS = MODULE_NAME[0].toLocaleUpperCase() + MODULE_NAME.slice
 async function create() {
     try {
         await fs.mkdir(PATH + MODULE_NAME, () => { });
+        await fs.mkdir(PATH + MODULE_NAME + "/api", () => { });
+        await fs.mkdir(PATH + MODULE_NAME + "/factory", () => { });
         await fs.mkdir(PATH + MODULE_NAME + "/factory", () => { });
         await fs.mkdir(PATH + MODULE_NAME + "/useCases", () => { });
-        await fs.mkdir(PATH + MODULE_NAME + "/route", () => { });
         await fs.writeFile(PATH + MODULE_NAME + "/factory/" + MODULE_NAME_CLASS + "Factory.ts", factory, () => { });
         await fs.writeFile(PATH + MODULE_NAME + "/useCases/" + MODULE_NAME_CLASS + "UseCase.ts", useCase, () => { });
         await fs.writeFile(PATH + MODULE_NAME + "/route/" + MODULE_NAME_CLASS + "Route.ts", route, () => { });
