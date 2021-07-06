@@ -1,8 +1,9 @@
 import { IDataBase } from "../../../DAL/IDataBase";
 import { IUser } from "../types/IUser";
-import { ISaveUser } from "../registration/useCases/_ports/ISaveUser";
-import { IGetUserByEmail } from "../authorization/useCases/_ports/IGetUserByEmail";
-import { IGetIsUserExist } from "../registration/useCases/_ports/IGetIsUserExist";
+import { ISaveUser } from "../useCases/_ports/ISaveUser";
+import { IGetIsUserExist } from "../useCases/_ports/IGetIsUserExist";
+import { IGetUserByEmail } from "../useCases/_ports/IGetUserByEmail";
+const bcrypt = require('bcryptjs');
 
 const USERS = './src/DAL/data/users.json';
 
@@ -26,6 +27,7 @@ export class UserPersistance implements ISaveUser, IGetUserByEmail, IGetIsUserEx
             let result = { isSuccessful: false, data: null, error: '' };
             const resultDataBase = await this.dataBase.write(USERS, user);
             result.isSuccessful = resultDataBase;
+            result.data = user;
             return result;
         } catch (error) {
             console.warn('UserPersistance -> saveUser: ', error);
@@ -35,15 +37,16 @@ export class UserPersistance implements ISaveUser, IGetUserByEmail, IGetIsUserEx
 
     getUserByEmail = async (email: string, password: string) => {
         try {
-            let result = { isSuccessful: false, data: null, error: '' };
+            let result = { isSuccessful: false, data: null, error: '', messageKey: '' };
             const users: IUser[] | undefined = await this.dataBase.read(USERS);
             if (Array.isArray(users)) {
-                const user = users.find(user => (user.email === email && user.password === password));
-                if (user) {
+                const user = users.find(user => (user.email === email));
+                const isPassEquals = await bcrypt.compare(password, user.password); 
+                if (user && isPassEquals) {
                     result.data = user;
                     result.isSuccessful = true;
                 } else {
-                    result.error = 'User not found';
+                    result.messageKey = 'user_not_found';
                 }
             }
             return result;

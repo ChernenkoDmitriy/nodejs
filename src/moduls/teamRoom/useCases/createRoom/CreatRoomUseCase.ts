@@ -1,3 +1,4 @@
+import { IAddListenerSocket, ISendToMany, SOCKET_EVENTS } from "../../../../socketIO";
 import { IResponse } from "../../../../types/IResponse";
 import { IRoomMember } from "../../types/IRoomMember";
 import { ICreateRoom } from "../_ports/ICreateRoom";
@@ -11,8 +12,10 @@ export class UserRegisterUseCase implements IUserRegisterUseCase {
     constructor(
         private teamRoomHelper: ICreateRoom,
         private teamRoomDataBase: ISaveTeamRoom,
-        // private userInformer: ISend,
-    ) { }
+        private socket: ISendToMany & IAddListenerSocket,
+    ) {
+        this.socket.addListener(SOCKET_EVENTS.CREATE_TEAM_ROOM, this.createTeamRoom);
+    }
 
     createTeamRoom = async ({ name, logo, members, admin }) => {
         try {

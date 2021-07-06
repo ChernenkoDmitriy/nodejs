@@ -3,6 +3,17 @@ import { IDataBase } from './IDataBase';
 
 export class DataBaseFile implements IDataBase {
 
+    writeAll = async (fileName: string, data: any): Promise<boolean> => {
+        try {
+            const jsonValue = JSON.stringify(data);
+            await fs.writeFile(fileName, jsonValue, (e) => { e && console.warn('DataBaseFile -> writeToFile -> error ', e) });
+            return true;
+        } catch (error) {
+            console.warn('DataBaseFile -> write: ', error);
+            return false;
+        }
+    }
+
     write = async (fileName: string, value: any): Promise<boolean> => {
         try {
             const data = await this.read(fileName) || [];

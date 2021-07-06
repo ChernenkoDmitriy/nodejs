@@ -1,4 +1,5 @@
 import { DataBaseFile } from "../../../DAL/dataBaseFile";
+import { ISocket, SocketIOWrapper, SOCKET_EVENTS } from "../../../socketIO";
 import { TeamRoomHelper } from "../api/TeamRoomHelper";
 import { TeamRoomDataBase } from "../DAL/TeamRoomDataBase";
 import { UserRegisterUseCase } from "../useCases/createRoom/CreatRoomUseCase";
@@ -20,14 +21,16 @@ export class TeamRoomFactory {
     }
 
     private createPresenter = () => {
+        const socket = new SocketIOWrapper();
         const dataBase = new DataBaseFile();
         const teamRoomDataBase = new TeamRoomDataBase(dataBase);
         const teamRoomHelper = new TeamRoomHelper();
         return null;
     }
 
-    private createRoom = (teamRoomHelper, teamRoomDataBase) => {
-        const userRegisterUseCase = new UserRegisterUseCase(teamRoomHelper, teamRoomDataBase)
+    private createRoom = (teamRoomHelper, teamRoomDataBase, socket: ISocket) => {
+        const userRegisterUseCase = new UserRegisterUseCase(teamRoomHelper, teamRoomDataBase, socket);
+        socket.addListener(SOCKET_EVENTS.CREATE_TEAM_ROOM, userRegisterUseCase.createTeamRoom);
     }
 
 }

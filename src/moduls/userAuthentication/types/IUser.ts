@@ -6,5 +6,6 @@ export interface IUser {
     logo:string;
     id?: number;
     uid: string;
-    token: string;
+    isActivated: boolean;
+    activationLink: string;
 }

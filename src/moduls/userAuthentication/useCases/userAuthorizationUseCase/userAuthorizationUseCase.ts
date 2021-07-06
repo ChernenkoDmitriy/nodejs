@@ -1,6 +1,6 @@
-import { IResponse } from "../../../../../types/IResponse";
-import { IGetAuthResponse } from "../_ports/IGetAuthResponse";
+import { IResponse } from "../../../../types/IResponse";
 import { IGetUserByEmail } from "../_ports/IGetUserByEmail";
+import { IGetUserForResponse } from "../_ports/IGetUserForResponse";
 
 export interface IUserAuthorizationUseCase {
     authorize: (body: { email: string, password: string }) => Promise<IResponse>;
@@ -8,14 +8,14 @@ export interface IUserAuthorizationUseCase {
 
 export class UserAuthorizationUseCase implements IUserAuthorizationUseCase {
     constructor(
-        private userAuthorizationHelper: IGetAuthResponse,
+        private userAuthenticationHelper: IGetUserForResponse,
         private userDataBase: IGetUserByEmail,
     ) { }
 
     authorize = async ({ email, password }) => {
         try {
             const dataBaseStatus = await this.userDataBase.getUserByEmail(email, password);
-            const response = this.userAuthorizationHelper.getUserForResponse(dataBaseStatus);
+            const response = this.userAuthenticationHelper.getUserForResponse(dataBaseStatus);
             return response;
         } catch (error) {
             console.warn('UserAuthorizationUseCase -> authorize: ', error);
