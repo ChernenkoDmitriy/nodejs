@@ -9,7 +9,7 @@ export class SocketIOWrapper implements ISocket {
     private static instance: SocketIOWrapper;
 
     private ws: any;
-    private connections = {};
+    private connections: { [key: string]: { id: string, socket: any } } = {} as any;
     private useCases = {};
 
     constructor() {
@@ -23,33 +23,34 @@ export class SocketIOWrapper implements ISocket {
         const webSocketIo = socketIO(server);
         this.ws = webSocketIo;
         this.createConnection();
-    };
+    }
 
     private createConnection = () => {
         this.ws.sockets.on('connection', async (socket) => {
-            console.log('connect ', socket);
-            const { uid, token } = socket.handshake.query;
-            this.connections[uid] = socket;
+            const { id, token } = socket.handshake.query;
+            this.connections[token] = { socket, id };
 
             Object.keys(this.useCases).forEach(socketEvent => {
-                socket.on(socketEvent, (msg) => this.useCases[socketEvent](msg))
+                socket.on(socketEvent, (msg) => {
+                    this.useCases[socketEvent](msg)
+                })
             })
 
             socket.on('disconnect', (data) => {
                 console.log('disconnect ', data);
-                delete this.connections[uid];
+                delete this.connections[token];
             });
         });
-    };
+    }
 
     addListener = (event: string, callBack: (msg: any) => void) => {
         this.useCases[event] = callBack;
     }
 
-    sendToMany = (uids: string[], event: string, data: any) => {
-        uids.forEach(uid => {
-            if (this.connections[uid]) {
-                this.connections[uid].emit(event, data);
+    sendToMany = (userUids: string[], event: string, data: any) => {
+        Object.values(this.connections).forEach(item => {
+            if (userUids.includes(item.id)) {
+                item.socket.emit(event, data);
             }
         });
     }

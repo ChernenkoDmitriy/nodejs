@@ -1,4 +1,4 @@
-import { UserAuthenticationFactory } from "../moduls/userAuthentication/factory/UserAuthenticationFactory";
+import { UserAuthenticationFactory } from "../modules/userAuthentication/factory/UserAuthenticationFactory";
 import { Router } from 'express';
 import { ROUTE_NAMES } from "./RouteNames";
 
