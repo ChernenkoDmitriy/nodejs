@@ -27,6 +27,7 @@ export class SocketIOWrapper implements ISocket {
 
     private createConnection = () => {
         this.ws.sockets.on('connection', async (socket) => {
+            console.log('connect')
             const { id, token } = socket.handshake.query;
             this.connections[token] = { socket, id };
 

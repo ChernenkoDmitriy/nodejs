@@ -41,6 +41,7 @@ buck-out/
 \.buckd/
 *.keystore
 !debug.keystore
+task-manager-58a7a-firebase-adminsdk-jb29f-20a2420b4e.json
 
 # fastlane
 #

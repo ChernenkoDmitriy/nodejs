@@ -7,12 +7,16 @@ async function create() {
     try {
         await fs.mkdir(PATH + MODULE_NAME, () => { });
         await fs.mkdir(PATH + MODULE_NAME + "/api", () => { });
+        await fs.mkdir(PATH + MODULE_NAME + "/controller", () => { });
+        await fs.mkdir(PATH + MODULE_NAME + "/DAL", () => { });
         await fs.mkdir(PATH + MODULE_NAME + "/factory", () => { });
-        await fs.mkdir(PATH + MODULE_NAME + "/factory", () => { });
+        await fs.mkdir(PATH + MODULE_NAME + "/router", () => { });
+        await fs.mkdir(PATH + MODULE_NAME + "/types", () => { });
         await fs.mkdir(PATH + MODULE_NAME + "/useCases", () => { });
+        await fs.writeFile(PATH + MODULE_NAME + "/controller/" + MODULE_NAME_CLASS + "Controller.ts", controller, () => { });
         await fs.writeFile(PATH + MODULE_NAME + "/factory/" + MODULE_NAME_CLASS + "Factory.ts", factory, () => { });
+        await fs.writeFile(PATH + MODULE_NAME + "/router/" + MODULE_NAME_CLASS + "Router.ts", router, () => { });
         await fs.writeFile(PATH + MODULE_NAME + "/useCases/" + MODULE_NAME_CLASS + "UseCase.ts", useCase, () => { });
-        await fs.writeFile(PATH + MODULE_NAME + "/route/" + MODULE_NAME_CLASS + "Route.ts", route, () => { });
     } catch (error) {
         
     }
@@ -20,21 +24,48 @@ async function create() {
 
 create();
 
-const factory = `
-import { DataBaseFile } from "../../../DAL/dataBaseFile";
-import { IDataBase } from "../../../DAL/IDataBase";
-import { I${MODULE_NAME_CLASS}Route, ${MODULE_NAME_CLASS}Route } from "../route/${MODULE_NAME_CLASS}Route";
-import { I${MODULE_NAME_CLASS}UseCase, ${MODULE_NAME_CLASS}UseCase } from "../useCases/${MODULE_NAME_CLASS}UseCase";
+const router =`
+import { Router } from 'express';
+import { ${MODULE_NAME_CLASS}Factory } from '../factory/ ${MODULE_NAME_CLASS}Factory';
+const { body } = require('express-validator');
 
-export interface I${MODULE_NAME_CLASS}Factory {
-    ${MODULE_NAME}Route: I${MODULE_NAME_CLASS}Route;
+const ROUTE_NAMES = {
 }
 
-export class ${MODULE_NAME_CLASS}Factory implements I${MODULE_NAME_CLASS}Factory {
-    private dataBase: IDataBase = new DataBaseFile();
-    private ${MODULE_NAME_CLASS}DataBase: I${MODULE_NAME_CLASS}DataBase = new ${MODULE_NAME_CLASS}ataBase(this.dataBase);
-    private ${MODULE_NAME}UseCase: I${MODULE_NAME_CLASS}UseCase = new ${MODULE_NAME_CLASS}UseCase();
-    readonly ${MODULE_NAME}Route: I${MODULE_NAME_CLASS}Route = new ${MODULE_NAME_CLASS}Route(this.${MODULE_NAME}UseCase);
+const userRouter = Router();
+const userController = ${MODULE_NAME_CLASS}Factory.get();
+
+${MODULE_NAME}Router.post(
+    ROUTE_NAMES. ,
+    ${MODULE_NAME}Controller.registration
+);
+
+export default ${MODULE_NAME}Router;
+`;
+
+const factory = `
+import { ${MODULE_NAME_CLASS}Persistance } from "../DAL/${MODULE_NAME_CLASS}Persistance";
+import { ${MODULE_NAME_CLASS}Controller } from "../controller/${MODULE_NAME_CLASS}Controller";
+const ${MODULE_NAME_CLASS}Model = require('../../../DAL/models/${MODULE_NAME}Module');
+
+export class ${MODULE_NAME_CLASS}Factory {
+    private static presenter: ${MODULE_NAME_CLASS}Controller;
+    
+    static get() {
+        if (!${MODULE_NAME_CLASS}Factory.presenter) {
+            ${MODULE_NAME_CLASS}Factory.presenter = new ${MODULE_NAME_CLASS}Factory().createPresenter();
+        }
+        return ${MODULE_NAME_CLASS}Factory.presenter;
+    }
+
+    private createPresenter = () => {
+        const ${MODULE_NAME}Persistance = new ${MODULE_NAME_CLASS}Persistance(${MODULE_NAME_CLASS}Model);
+        const ${MODULE_NAME}Helper = new ${MODULE_NAME_CLASS}nHelper(${MODULE_NAME}Persistance);
+
+        const ${MODULE_NAME}UseCase = new ${MODULE_NAME_CLASS}UseCase(${MODULE_NAME}Helper, ${MODULE_NAME}Persistance);
+
+        return ${MODULE_NAME}Controller;
+    }
 }
 `
 
@@ -58,7 +89,7 @@ export class ${MODULE_NAME_CLASS}UseCase implements I${MODULE_NAME_CLASS}UseCase
 
 }
 `
-const route = `
+const controller = `
 import { I${MODULE_NAME_CLASS}UseCase } from "../useCases/${MODULE_NAME_CLASS}UseCase";
 
 const { validationResult } = require('express-validator');

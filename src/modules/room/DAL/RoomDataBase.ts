@@ -1,16 +1,23 @@
-import { IDataBase } from "../../../DAL/IDataBase";
 import { IRoom } from "../types/IRoom";
 
-const ROOMS = './src/DAL/data/rooms.json';
-
-export interface IRoomDataBase {
+export interface IRoomPersistance {
+    getRoom: (roomId: string) => Promise<IRoom>;
     getUserRooms: (userId: string) => Promise<IRoom[]>
     saveRoom: (room: IRoom) => Promise<IRoom>;
 }
 
-export class RoomDataBase implements IRoomDataBase {
+export class RoomDataBase implements IRoomPersistance {
     constructor(private dataBase: any) {
 
+    }
+
+    getRoom = async (roomId: string) => {
+        try {
+            const room: IRoom = await this.dataBase.findOne({ _id: roomId });
+            return room;
+        } catch (error) {
+            console.warn('TeamRoomDataBase -> getRoom: ', error);
+        }
     }
 
     getUserRooms = async (userId: string) => {

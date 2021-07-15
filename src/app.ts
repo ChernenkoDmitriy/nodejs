@@ -2,19 +2,21 @@ import express from 'express';
 import http from 'http';
 import { SocketIOWrapper } from './socketIO';
 import cookieParser from 'cookie-parser';
-import userRouter from './modules/userAuthentication/router/Router';
+import userRouter from './modules/user/router/Router';
 import { config } from './config';
 import mongoose from 'mongoose';
-import RoomRouter from './modules/room/router/RoomRouter';
+import roomRouter from './modules/room/router/RoomRouter';
+import notificationRouter from './modules/notification/router/NotificationRouter';
 
 const PORT = process.env.PORT || 3000;
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));``
 app.use(userRouter);
-app.use(RoomRouter);
+app.use(roomRouter);
+app.use(notificationRouter);
 
 const server = http.createServer(app);
 
